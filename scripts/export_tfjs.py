@@ -24,6 +24,8 @@ import json
 import shutil
 from pathlib import Path
 
+import numpy as np
+
 AI_DIR = Path(__file__).resolve().parents[1]
 MODELS_DIR = AI_DIR / "models"
 FRONTEND_MODEL_DIR = AI_DIR.parent / "frontend" / "public" / "models" / "sign"
@@ -44,6 +46,10 @@ def main() -> int:
 
     model = keras.models.load_model(keras_path)
 
+    def round_list(arr):
+        # 6 cifras significativas: reduce mucho el tamano sin afectar la salida.
+        return np.round(arr.astype(np.float64), 6).tolist()
+
     layers_out = []
     for layer in model.layers:
         cfg = layer.get_config()
@@ -55,8 +61,8 @@ def main() -> int:
                     "type": "dense",
                     "units": int(cfg["units"]),
                     "activation": cfg.get("activation", "linear"),
-                    "kernel": kernel.astype(float).tolist(),  # (in, units)
-                    "bias": bias.astype(float).tolist(),  # (units,)
+                    "kernel": round_list(kernel),  # (in, units)
+                    "bias": round_list(bias),  # (units,)
                 }
             )
         elif layer.__class__.__name__ == "Dropout":
@@ -77,7 +83,8 @@ def main() -> int:
                 "version": 1,
                 "inputDim": input_dim,
                 "layers": layers_out,
-            }
+            },
+            separators=(",", ":"),
         ),
         encoding="utf-8",
     )
