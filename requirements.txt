@@ -1,0 +1,13 @@
+# FASE 5 — entrenamiento del modelo de reconocimiento de senas (MLP)
+# Python 3.11 o 3.12
+#
+#   cd ai
+#   py -m venv .venv
+#   .venv\Scripts\activate        (Windows)   |   source .venv/bin/activate  (Unix)
+#   pip install -r requirements.txt
+
+numpy>=1.26,<3
+scikit-learn>=1.4,<2
+tensorflow>=2.16,<2.20      # incluye Keras 3
+tensorflowjs>=4.17          # exportar el modelo a formato TF.js
+matplotlib>=3.8             # matriz de confusion / graficas de evaluacion

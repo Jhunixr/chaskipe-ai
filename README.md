@@ -1,60 +1,63 @@
 # IA — Chaski Pe
 
-> Estado: **FASE 4 — captura de dataset de landmarks**.
-> Aun **no** se entrena ningun modelo (eso es la FASE 5).
+> Estado: **FASE 5 — pipeline de entrenamiento del modelo (MLP)**.
+> Funciona de punta a punta con datos **sinteticos** de prueba.
+> El modelo real necesita muestras capturadas y validadas con LSP.
 
 ## Tecnologias
 
-- **MediaPipe** — en la **FASE 3** se integro en el frontend (Hand Landmarker,
-  `@mediapipe/tasks-vision`). La captura del dataset se hace desde el navegador.
-- **Python** — para inspeccionar/procesar el dataset y (FASE 5) entrenar.
-- Framework de entrenamiento por definir (scikit-learn / TensorFlow / PyTorch).
+- **MediaPipe** — integrado en el frontend (FASE 3). Hand Landmarker.
+- **Python 3.11/3.12** + **TensorFlow/Keras 3** + **scikit-learn** — entrenamiento.
+- Inferencia: **en el navegador**, con una implementacion propia y ligera
+  (multiplicacion de matrices), sin TensorFlow.js. Ver
+  `frontend/src/services/signModel.ts`.
 
-## Flujo previsto (FLUJO 1)
-
-```
-camara → MediaPipe (manos) → landmarks → modelo IA → seña reconocida → texto → voz
-```
-
-Hoy funciona: `camara → MediaPipe → landmarks`. El resto es demostrativo.
-
-## Estructura
+## Flujo (FLUJO 1)
 
 ```
-ai/
-├── data/
-│   ├── DATASET_FORMAT.md   # esquema de las muestras (schemaVersion 1)
-│   ├── raw/                # 1 JSON por grabacion, por sena (NO se versiona)
-│   │   ├── HOLA/  GRACIAS/  AYUDA/  SI/  NO/
-│   └── processed/          # datasets normalizados para entrenar (FASE 5)
-├── scripts/
-│   └── inspect_dataset.py  # resumen y validacion del dataset (stdlib, Python 3.10+)
-├── models/                 # modelos entrenados (NO se versiona)
-└── README.md
+camara → MediaPipe (manos) → landmarks → features → MLP → sena → texto → voz
+         [FASE 3]                          [FASE 5]  [FASE 5]  [FASE 6]  [hecho]
 ```
 
-## Como capturar muestras (FASE 4)
+## Instalacion
 
-1. `cd frontend && npm run dev`
-2. Abrir `http://localhost:5173/dev/dataset` (herramienta interna).
-3. Elegir la sena, marcar el consentimiento, grabar ~2 s con la camara.
-4. Si la calidad es buena, descargar el JSON.
-5. Mover el archivo a `ai/data/raw/<ETIQUETA>/`.
-6. Revisar el estado: `py ai/scripts/inspect_dataset.py`
+```bash
+cd ai
+py -m venv .venv
+.venv\Scripts\activate            # Windows   (source .venv/bin/activate en Unix)
+pip install -r requirements.txt
+```
 
-Solo se guardan coordenadas de landmarks, **no video**.
+## Pipeline
 
-## Scripts
+| Paso | Script | Entrada → Salida |
+| ---- | ------ | ---------------- |
+| 0 (prueba) | `synth_dataset.py` | — → `data/raw/<SENA>/*.json` sinteticos |
+| 1 | `preprocess.py` | `data/raw/` → `data/processed/{X,y,labels,meta}` |
+| 2 | `train.py` | `data/processed/` → `models/sign_mlp.keras` + `scaler.json` |
+| 3 | `evaluate.py` | `data/processed/` → `models/evaluation.json` + `confusion_matrix.png` |
+| 4 | `export_tfjs.py` | `models/` → `frontend/public/models/sign/` |
+| — | `inspect_dataset.py` | resumen del dataset (sin dependencias) |
+| — | `features.py` | extraccion de features (usado por 1 y 3) |
 
-| Script                | Estado    | Proposito                                   |
-| --------------------- | --------- | ------------------------------------------- |
-| `inspect_dataset.py`  | **hecho** | Resumen por sena: muestras, frames, fps, calidad |
-| `preprocess.py`       | futuro    | Normalizar (centrar/escalar) -> `processed/` |
-| `train.py`            | futuro    | Entrenar el modelo de reconocimiento        |
-| `evaluate.py`         | futuro    | Evaluar con datos de prueba                 |
+```bash
+py scripts/synth_dataset.py --per-class 40   # solo para probar sin datos reales
+py scripts/preprocess.py
+py scripts/train.py
+py scripts/evaluate.py
+py scripts/export_tfjs.py
+```
 
-> La captura ya no se hace con un `collect_landmarks.py` de Python: se hace desde
-> el frontend, que reutiliza la camara y MediaPipe de las fases 2-3.
+## Modelo
+
+- **MLP**: `381 → 128 → 64 → n_clases`, ReLU + dropout, softmax.
+- **Features** (381 por grabacion): por cada mano (izq/der) y coordenada de cada
+  uno de los 21 landmarks, la media/desv/rango a lo largo del tiempo; mas la
+  velocidad media de cada muneca y la presencia media de manos. Los landmarks se
+  normalizan (centrados en la muneca, escalados por el tamano de la mano).
+- La MISMA extraccion esta en `frontend/src/services/signFeatures.ts`.
+  Verificado: Python y TS coinciden con diferencia < 1e-6. Si cambias una,
+  cambia la otra y sube `FEATURE_VERSION` en ambas.
 
 ## Vocabulario inicial
 
@@ -62,19 +65,22 @@ Solo se guardan coordenadas de landmarks, **no video**.
 HOLA  GRACIAS  AYUDA  SI  NO
 ```
 
-(La etiqueta es `SI` sin tilde; la palabra legible es "Si".)
-
 ## Consideraciones importantes
 
-- La **Lengua de Señas Peruana (LSP) no** comparte la gramatica del espanol.
-- **No inventar señas reales.** Cada muestra lleva `"validated": false` hasta ser
-  revisada con **personas usuarias de LSP o interpretes**.
-- **No se graban videos.** La captura requiere consentimiento explicito
-  (checkbox obligatorio en la herramienta).
-- El dataset vive en `ai/data/`, **no** dentro de PostgreSQL.
+- **El modelo actual esta entrenado con datos SINTETICOS.** No reconoce senas
+  reales; solo valida que el pipeline funciona. `labels.json` lo marca con
+  `"includesSynthetic": true`.
+- La **LSP no** comparte la gramatica del espanol. Cada muestra lleva
+  `"validated": false` hasta ser revisada con **personas usuarias de LSP o
+  interpretes**.
+- **No se graban videos.** Solo landmarks.
+- El dataset vive en `ai/data/`, **no** en PostgreSQL.
+- `data/processed/`, `models/` y `frontend/public/models/sign/` **no se
+  versionan** (cada quien los regenera).
 
 ## Pendiente
 
-- [ ] Capturar 15-30 muestras por sena, de varias personas.
+- [ ] Capturar 15-30 muestras reales por sena, de varias personas.
 - [ ] Sesion de validacion con persona usuaria de LSP / interprete.
-- [ ] `preprocess.py` y el formato de `processed/` (FASE 5).
+- [ ] `py scripts/synth_dataset.py --clean` y re-entrenar con datos reales.
+- [ ] Conectar el modelo en "Senas a texto" (FASE 6).
