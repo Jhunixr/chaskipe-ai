@@ -18,7 +18,13 @@ import json
 import sys
 from pathlib import Path
 
-VOCAB = ["HOLA", "GRACIAS", "AYUDA", "SI", "NO"]
+# Abecedario de la LSP (deletreo manual). Las carpetas que existan mandan;
+# esta lista solo asegura que se muestren aunque esten vacias.
+VOCAB = [
+    "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "LL",
+    "M", "N", "ENYE", "O", "P", "Q", "R", "RR", "S", "T", "U", "V",
+    "W", "X", "Y", "Z",
+]
 REQUIRED_KEYS = {
     "schemaVersion",
     "label",

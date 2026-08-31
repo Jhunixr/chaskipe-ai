@@ -1,18 +1,23 @@
 #!/usr/bin/env python3
 """
-Genera un dataset SINTETICO de grabaciones de landmarks (FASE 5).
+Genera un dataset SINTETICO de grabaciones de landmarks.
 
-Sirve solo para validar el pipeline (preprocess -> train -> evaluate -> export)
-de punta a punta ANTES de tener datos reales. Cada clase usa un "gesto base"
-distinto (mano abierta, puno, indice arriba, dos manos, movimiento lateral) con
-ruido y variacion, para que el modelo pueda separarlas.
+  OBSOLETO para el abecedario de la LSP (FASE 10): un dibujo/pose 2D no da
+  landmarks 3D fiables, y los "gestos base" de este script NO se parecen a las
+  letras reales. Usa la herramienta web /dev/dataset para capturar datos
+  reales del abecedario.
+
+Se conserva solo para hacer un SMOKE TEST del pipeline
+(preprocess -> train -> evaluate -> export) sin camara. Cada clase usa un
+gesto base distinto con ruido; el modelo aprende a separarlos pero eso no
+significa nada para senas reales.
 
 NO son senas reales. Los archivos llevan  "source": "synthetic"  y
-"validated": false. Borralos cuando llegue el dataset real:
+"validated": false. Borralos antes de entrenar con datos reales:
 
     py ai/scripts/synth_dataset.py --clean
 
-Uso:
+Uso (solo para probar el pipeline):
     py ai/scripts/synth_dataset.py --per-class 30
 """
 from __future__ import annotations
