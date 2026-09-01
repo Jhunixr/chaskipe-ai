@@ -1,14 +1,13 @@
 # Formato del dataset de landmarks — Chaski Pe
 
-> **FASE 10.** Dataset del **abecedario de la LSP** (deletreo manual).
+> Dataset de **senas de la LSP**. Cada grabacion es una **secuencia temporal**
+> de landmarks (sirve para poses fijas y para senas con movimiento).
 > Captura desde la herramienta web `/dev/dataset`.
 
 ## Aviso importante
 
-Las grabaciones son **material de trabajo, no un dataset validado**. El deletreo
-manual (dactilologia) **no es toda la LSP**: la lengua tiene su propia gramatica
-y vocabulario, y hay variacion regional. La orientacion de la muneca no se
-aprecia bien en una lamina.
+Las grabaciones son **material de trabajo, no un dataset validado**. La LSP tiene
+su propia gramatica, vocabulario y variacion regional.
 
 Toda sena capturada aqui debe revisarse con **personas usuarias de LSP o
 interpretes** antes de considerarse correcta. Cada muestra lleva
@@ -23,30 +22,29 @@ La captura requiere consentimiento explicito de quien aparece frente a la camara
 ai/data/
 ├── DATASET_FORMAT.md        # este archivo
 ├── raw/
-│   ├── A/
-│   │   ├── A__2026-08-31T14-05-01__a1b2c3.json
+│   ├── HOLA/
+│   │   ├── HOLA__2026-08-31T14-05-01__a1b2c3.json
 │   │   └── ...
-│   ├── B/  C/  D/  ...  Z/
-│   ├── ENYE/    # Ñ (etiqueta sin caracteres especiales)
-│   ├── LL/  RR/
+│   ├── GRACIAS/
+│   └── REPOSO/              # mano(s) sin hacer ninguna sena
 └── processed/               # datasets normalizados para entrenar
 ```
 
 Nombre de archivo: `<ETIQUETA>__<timestamp ISO con guiones>__<id corto>.json`
 
-## Vocabulario: abecedario de la LSP
+## Vocabulario
 
-29 clases. Referencia: cartel "El Alfabeto - Lengua de Senas Peruana"
-(Paz y Esperanza).
+| Etiqueta | Palabra | Notas |
+| -------- | ------- | ----- |
+| `HOLA`    | Hola    | sena con **movimiento** (saludo); se graba ~2,5 s |
+| `GRACIAS` | Gracias | sena con **movimiento**; se graba ~2,5 s |
+| `REPOSO`  | —       | mano(s) en el encuadre **sin sena**; evita falsos positivos |
 
-| Etiquetas | Notas |
-| --------- | ----- |
-| `A` `B` `C` `D` `E` `F` `G` `H` `I` `K` `L` `M` `N` `O` `P` `Q` `R` `S` `T` `U` `V` `W` `X` `Y` | poses **estaticas** (mano quieta) |
-| `J` `Z` `ENYE` `LL` `RR` | llevan **movimiento** (`"dynamic": true` en el frontend) |
-
-- La etiqueta es en MAYUSCULAS y sin tildes ni caracteres especiales
-  (`ENYE` en vez de Ñ), segura como nombre de carpeta y clave del modelo.
-- Objetivo: ~30 muestras por letra, variando mano usada, distancia, luz y persona.
+- La etiqueta es en MAYUSCULAS, sin tildes ni caracteres especiales.
+- Ampliable: anade una carpeta y una entrada en
+  `frontend/src/types/dataset.ts` (`SIGN_VOCAB`).
+- Objetivo: **~30 muestras por sena**, variando persona, mano, distancia, luz y
+  velocidad del gesto.
 
 ## Esquema de una muestra (`.json`)
 
@@ -109,16 +107,16 @@ Nombre de archivo: `<ETIQUETA>__<timestamp ISO con guiones>__<id corto>.json`
 - `mirrored: true` significa que la vista era en espejo; el pre-proceso de la
   FASE 5 decide si se voltea.
 
-## Recomendaciones de captura (abecedario)
+## Recomendaciones de captura
 
-- **~30 muestras por letra** para un prototipo; mas y de varias personas para
+- **~30 muestras por sena** para un prototipo; mas y de varias personas para
   algo usable.
-- Mira el cartel del abecedario LSP y forma la letra con cuidado.
-- Poses estaticas: manten la mano quieta durante la grabacion (~1 s).
-- Letras con movimiento (J, Z, Ñ, LL, RR): haz el movimiento completo (~2 s).
-- Varia entre muestras: mano usada, distancia a la camara, altura, luz, fondo,
-  y si puedes, la persona.
-- La mano debe estar en el encuadre desde el primer frame.
+- Senas con movimiento (HOLA, GRACIAS): haz el gesto **completo**, empezando y
+  terminando con la mano en el encuadre. Tienes ~2,5 s.
+- `REPOSO`: la mano en el encuadre sin hacer ninguna sena (quieta o con
+  movimiento neutro).
+- Varia entre muestras: persona, mano usada, distancia, altura, luz, fondo,
+  y la **velocidad** del gesto (mas lento / mas rapido).
 - Revisa cada lote con una persona usuaria de LSP o interprete y marca
   `"validated": true` (o descarta) antes de usarlo para entrenar.
 
@@ -127,10 +125,10 @@ Nombre de archivo: `<ETIQUETA>__<timestamp ISO con guiones>__<id corto>.json`
 ```
 1. cd frontend && npm run dev
 2. abrir http://localhost:5173/dev/dataset
-3. elegir letra (flechas), marcar consentimiento
-4. hacer la sena mirando el cartel -> Grabar -> Descargar JSON
+3. elegir sena (flechas), marcar consentimiento
+4. hacer la sena -> Grabar -> Descargar JSON
 5. mover el archivo a ai/data/raw/<ETIQUETA>/
-6. repetir hasta ~30 por letra
+6. repetir hasta ~30 por sena (HOLA, GRACIAS, REPOSO)
 7. py ai/scripts/inspect_dataset.py   # ver el progreso
 8. cuando haya suficientes: preprocess -> train -> evaluate -> export
 ```
