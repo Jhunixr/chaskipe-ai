@@ -11,3 +11,7 @@ scikit-learn>=1.4,<2
 tensorflow>=2.16,<2.20      # incluye Keras 3
 tensorflowjs>=4.17          # exportar el modelo a formato TF.js
 matplotlib>=3.8             # matriz de confusion / graficas de evaluacion
+
+# Abecedario estatico (import_lsp_alphabet.py / train_letters.py)
+mediapipe>=0.10.14         # mismo Hand Landmarker que el frontend
+pillow>=10

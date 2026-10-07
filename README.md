@@ -21,6 +21,52 @@ sena (no solo una pose).
 camara → MediaPipe (mano) → landmarks (secuencia) → features → MLP → sena → texto → voz
 ```
 
+## Dos modelos
+
+| Modelo | Que reconoce | Entrada | Scripts | Se exporta a |
+| ------ | ------------ | ------- | ------- | ------------ |
+| **Letras** | 24 letras estaticas del abecedario | pose de UNA mano por frame (world landmarks), promediada en ~0.8 s | `import_lsp_alphabet.py` → `train_letters.py` | `frontend/public/models/letters/` (**versionado**) |
+| **Senas** | senas con movimiento (HOLA, GRACIAS...) | resumen de ~2.5 s de landmarks | `preprocess.py` → `train.py` → `export_tfjs.py` | `frontend/public/models/sign/` (no versionado) |
+
+En "Senas a texto" se elige el modo (Abecedario / Senas). En modo Abecedario
+las letras confirmadas se van sumando a una palabra (deletreo).
+
+### Modelo de letras (abecedario estatico)
+
+Entrenado con el dataset publico **Static Hand Gestures of the Peruvian Sign
+Language Alphabet** (CC BY-SA 4.0, ver
+`data/external/lsp_alfabeto_estatico/README.md`). Las imagenes pasan por el
+mismo Hand Landmarker de MediaPipe que usa la app; solo se guardan los landmarks.
+
+```bash
+pip install mediapipe pillow numpy scikit-learn
+git clone --depth 1 https://github.com/Expo99/Static-Hand-Gestures-of-the-Peruvian-Sign-Language-Alphabet.git /tmp/lsp-alfabeto
+python ai/scripts/import_lsp_alphabet.py /tmp/lsp-alfabeto   # -> data/external/.../landmarks.csv
+python ai/scripts/train_letters.py                            # -> frontend/public/models/letters/
+cd frontend && npm test                                       # paridad Python <-> TypeScript
+```
+
+- **Features** (`static_features.py` = `frontend/src/services/staticFeatures.ts`):
+  world landmarks (metros, no dependen de la proporcion del video), mano
+  reflejada a una orientacion canonica (sirve igual con la mano izquierda o la
+  derecha), centrada en la muneca y escalada por muneca → nudillo medio, mas
+  10 distancias entre puntas de dedos. 73 valores.
+- **MLP** 73 → 128 → 64 → 24 (sklearn), con variaciones sinteticas de cada
+  imagen: rotacion 3D, proporciones de dedos ±12 %, ruido.
+- **Evaluacion** (ultimo 20 % de cada letra reservado, sin ver al entrenar):
+
+  | | Accuracy |
+  | - | - |
+  | imagenes reservadas | **92 %** |
+  | con variaciones de mano/angulo | 90 % |
+  | con la otra mano (espejo) | 92 % |
+
+  Casi todas las letras ≥ 93 %. Las dificiles: **N 40 %, Q 53 %, M 59 %,
+  K 87 %** (M/N se confunden entre si: difieren en cuantos dedos cubren el
+  pulgar). Mas muestras reales de esas letras es lo que mas ayudaria.
+- Verificado en el navegador con camara simulada: deletrea "HOLA" correctamente.
+- J, Ñ y Z llevan movimiento: no estan en este modelo.
+
 ## Vocabulario (`frontend/src/types/dataset.ts` → `SIGN_VOCAB`)
 
 | Etiqueta | Palabra | Notas |
