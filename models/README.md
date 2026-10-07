@@ -18,3 +18,9 @@ El nino Chaski del logo convertido a 3D con **Hunyuan3D-2** (Tencent, Space
 - Licencia de Hunyuan3D-2: *Tencent Hunyuan 3D 2.0 Community License*
   (no aplica en la UE, Reino Unido ni Corea del Sur; revisar antes de un uso
   comercial grande).
+
+## `frontend/public/models/avatar/chaski.glb` (el que usa la app)
+
+El mismo modelo sin la mano esculpida del brazo levantado (componente conexa
+de la malla delante de la orejera). Su muneca queda en (-0.589, -0.30, 0.395)
+en coordenadas del modelo: ahi `scene.ts` coloca la mano articulada.

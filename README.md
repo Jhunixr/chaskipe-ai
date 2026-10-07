@@ -25,8 +25,17 @@ el texto: sube el brazo derecho y su mano forma cada letra.
 - La camara se acerca al busto mientras deletrea; el subtitulo resalta la
   letra actual. Respeta la velocidad del avatar de Accesibilidad.
 
-Pendiente para que sea un **humano realista**: un modelo GLB con esqueleto
-completo (incluidos los dedos) y el mapeo de los 21 puntos a sus huesos.
+### Modelo 3D del Chaski (por defecto)
+
+La app carga `frontend/public/models/avatar/chaski.glb`: el nino del logo en
+3D generado con Hunyuan3D-2 (ver `avatar/models/README.md`). A ese modelo se
+le quito la mano esculpida del brazo levantado (era una pieza separada de la
+malla) y en el puno de la manga se coloca la mano articulada, que forma las
+letras. En reposo muestra la B (mano abierta). Si el GLB no carga, se usa el
+avatar geometrico, que tambien deletrea.
+
+Pendiente: textura real (no proyectada), esqueleto completo para mover cabeza
+y brazos, y senas de palabras completas validadas con LSP.
 
 ## Que hay ahora (FASE 9)
 
