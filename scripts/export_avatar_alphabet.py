@@ -26,12 +26,13 @@ from pathlib import Path
 
 import numpy as np
 
+from paths import WEB_DIR  # noqa: E402
+
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from static_features import REFERENCE_HANDEDNESS, canonical_hand  # noqa: E402
 from train_letters import DEFAULT_CSV, load_csv  # noqa: E402
 
-REPO = Path(__file__).resolve().parents[2]
-OUT = REPO / "frontend" / "src" / "components" / "avatar" / "lspAlphabet.json"
+OUT = WEB_DIR / "src" / "components" / "avatar" / "lspAlphabet.json"
 
 
 def main() -> int:

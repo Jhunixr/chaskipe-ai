@@ -147,3 +147,12 @@ py scripts/export_tfjs.py  # -> el modelo llega al frontend
 - [ ] Sesion de validacion con persona usuaria de LSP / interprete.
 - [ ] Entrenar y exportar; revisar la matriz de confusion.
 - [ ] Ampliar el vocabulario (mas senas).
+
+## Dónde se guardan los modelos exportados
+
+Los scripts escriben los modelos y animaciones en la web
+(`public/models/...`, `src/components/avatar/...`). Buscan la web así:
+
+1. La variable de entorno `CHASKIPE_WEB_DIR`, si está definida.
+2. `../frontend` (monorepo `chaskipe`).
+3. `../chaskipe-web` (repos separados clonados en la misma carpeta).

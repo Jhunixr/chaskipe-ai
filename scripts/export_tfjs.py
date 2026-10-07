@@ -26,9 +26,11 @@ from pathlib import Path
 
 import numpy as np
 
+from paths import WEB_DIR  # noqa: E402
+
 AI_DIR = Path(__file__).resolve().parents[1]
 MODELS_DIR = AI_DIR / "models"
-FRONTEND_MODEL_DIR = AI_DIR.parent / "frontend" / "public" / "models" / "sign"
+FRONTEND_MODEL_DIR = WEB_DIR / "public" / "models" / "sign"
 
 
 def main() -> int:

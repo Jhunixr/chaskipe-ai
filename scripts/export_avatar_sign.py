@@ -22,8 +22,9 @@ from pathlib import Path
 
 import numpy as np
 
-REPO = Path(__file__).resolve().parents[2]
-OUT_DIR = REPO / "frontend" / "src" / "components" / "avatar" / "signs"
+from paths import WEB_DIR  # noqa: E402
+
+OUT_DIR = WEB_DIR / "src" / "components" / "avatar" / "signs"
 WRIST, MIDDLE_MCP = 0, 9
 
 

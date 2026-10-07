@@ -35,6 +35,8 @@ from pathlib import Path
 
 import numpy as np
 
+from paths import WEB_DIR  # noqa: E402
+
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from static_features import (  # noqa: E402
     NUM_LANDMARKS,
@@ -46,10 +48,9 @@ from static_features import (  # noqa: E402
 )
 
 AI_DIR = Path(__file__).resolve().parents[1]
-REPO_DIR = AI_DIR.parent
 DEFAULT_CSV = AI_DIR / "data" / "external" / "lsp_alfabeto_estatico" / "landmarks.csv"
-DEFAULT_OUT = REPO_DIR / "frontend" / "public" / "models" / "letters"
-FIXTURE = REPO_DIR / "frontend" / "src" / "services" / "__fixtures__" / "staticFeatures.fixture.json"
+DEFAULT_OUT = WEB_DIR / "public" / "models" / "letters"
+FIXTURE = WEB_DIR / "src" / "services" / "__fixtures__" / "staticFeatures.fixture.json"
 EVAL_OUT = AI_DIR / "models" / "letters_evaluation.json"
 
 FINGERS = [(1, 2, 3, 4), (5, 6, 7, 8), (9, 10, 11, 12), (13, 14, 15, 16), (17, 18, 19, 20)]

@@ -34,9 +34,10 @@ from pathlib import Path
 
 import numpy as np
 
+from paths import WEB_DIR  # noqa: E402
+
 AI_DIR = Path(__file__).resolve().parents[1]
-REPO_DIR = AI_DIR.parent
-DEFAULT_MODEL = REPO_DIR / "frontend" / "public" / "mediapipe" / "models" / "hand_landmarker.task"
+DEFAULT_MODEL = WEB_DIR / "public" / "mediapipe" / "models" / "hand_landmarker.task"
 DEFAULT_OUT = AI_DIR / "data" / "external" / "lsp_alfabeto_estatico" / "landmarks.csv"
 
 NUM_LANDMARKS = 21
