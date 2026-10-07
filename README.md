@@ -3,13 +3,25 @@
 > Estado: **reconocimiento de senas de la LSP** (vocabulario limitado).
 > El pipeline funciona; falta **capturar el dataset real** y validarlo con LSP.
 
+## Repositorios de Chaski Pe
+
+| Repo | Contenido |
+| --- | --- |
+| `chaskipe-ai` (este) | Scripts de entrenamiento y exportacion (`scripts/`, `data/`, `models/`) y el avatar Chaski 3D (`avatar/`) |
+| `chaskipe-web` | Web React; recibe los modelos exportados en `public/models/` |
+| `chaskipe-backend` | API FastAPI + PostgreSQL |
+| `chaskipe-app` | App Flutter |
+
+Clona `chaskipe-ai` y `chaskipe-web` en la misma carpeta para que los scripts
+encuentren la web (ver «Dónde se guardan los modelos exportados»).
+
 ## Tecnologias
 
 - **MediaPipe** — integrado en el frontend (FASE 3). Hand Landmarker.
 - **Python 3.11/3.12** + **TensorFlow/Keras 3** + **scikit-learn** — entrenamiento.
 - Inferencia: **en el navegador**, con una implementacion propia y ligera
   (multiplicacion de matrices), sin TensorFlow.js. Ver
-  `frontend/src/services/signModel.ts`.
+  `chaskipe-web/src/services/signModel.ts`.
 
 ## Objetivo
 
