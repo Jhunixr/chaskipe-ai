@@ -1,14 +1,32 @@
 # Avatar — Chaski Pe
 
-> Estado: **FASE 9 — avatar 3D basico (Three.js) con gesto DEMO**.
-> El movimiento **no** representa ninguna sena real. Las animaciones de LSP
-> validadas con personas usuarias o interpretes son la FASE 10.
+> Estado: **el Chaski del logo en 3D (Three.js) deletrea con el abecedario
+> manual de la LSP**. Las formas de mano son fotos reales de un dataset
+> publico; las senas de palabras completas aun no existen.
 
 ## Tecnologias
 
 - **Three.js** (`three`, en el frontend) — render del avatar.
 - **Blender** + **GLB/glTF** — *previsto para la FASE 10* (avatar con esqueleto
   y clips de animacion de senas validadas).
+
+## Deletreo LSP
+
+En "Texto a senas" (y desde Conversacion / Frases rapidas) el avatar deletrea
+el texto: sube el brazo derecho y su mano forma cada letra.
+
+- `fingerspelling.ts` — texto -> letras. Las 24 letras estaticas tienen forma
+  (`lspAlphabet.json`); J, Ñ y Z llevan movimiento y se muestran escritas.
+- `lspAlphabet.json` — una mano REAL por letra: el medoide de las fotos del
+  dataset *Static Hand Gestures of the Peruvian Sign Language Alphabet*
+  (CC BY-SA 4.0). Generado con `ai/scripts/export_avatar_alphabet.py`.
+- `spellingHand.ts` — mano de 21 articulaciones colocadas en la posicion
+  exacta de la foto + brazo con IK de dos segmentos.
+- La camara se acerca al busto mientras deletrea; el subtitulo resalta la
+  letra actual. Respeta la velocidad del avatar de Accesibilidad.
+
+Pendiente para que sea un **humano realista**: un modelo GLB con esqueleto
+completo (incluidos los dedos) y el mapeo de los 21 puntos a sus huesos.
 
 ## Que hay ahora (FASE 9)
 
