@@ -27,15 +27,19 @@ el texto: sube el brazo derecho y su mano forma cada letra.
 
 ### Modelo 3D del Chaski (por defecto)
 
-La app carga `frontend/public/models/avatar/chaski.glb`: el nino del logo en
-3D generado con Hunyuan3D-2 (ver `avatar/models/README.md`). A ese modelo se
-le quito la mano esculpida del brazo levantado (era una pieza separada de la
-malla) y en el puno de la manga se coloca la mano articulada, que forma las
-letras. En reposo muestra la B (mano abierta). Si el GLB no carga, se usa el
-avatar geometrico, que tambien deletrea.
+La app (`chaskipe-web`) carga `public/models/avatar/chaski.glb`, que es
+`avatar/exports/chaski_web.glb`: el nino del logo en 3D generado con
+**TRELLIS** (ver `avatar/models/README.md`). A ese modelo se le quito la mano
+esculpida del brazo levantado y en el puno de la manga se coloca una mano
+humana realista con huesos (`avatar/exports/mano.glb`, de MakeHuman, CC0),
+que forma las letras. En reposo muestra la B (mano abierta). Si el
+GLB no carga, se usa el avatar geometrico, que tambien deletrea.
 
-Pendiente: textura real (no proyectada), esqueleto completo para mover cabeza
-y brazos, y senas de palabras completas validadas con LSP.
+`avatar/exports/chaski_web.json` guarda donde quedo el puno (centro, normal,
+radio): de ahi sale `CHASKI_MODEL.wrist` en `scene.ts`.
+
+Pendiente: esqueleto completo para mover cabeza y brazos, y senas de palabras
+completas validadas con LSP.
 
 ## Que hay ahora (FASE 9)
 

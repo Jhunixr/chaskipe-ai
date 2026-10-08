@@ -38,7 +38,7 @@ camara → MediaPipe (mano) → landmarks (secuencia) → features → MLP → s
 | Modelo | Que reconoce | Entrada | Scripts | Se exporta a |
 | ------ | ------------ | ------- | ------- | ------------ |
 | **Letras** | 24 letras estaticas del abecedario | pose de UNA mano por frame (world landmarks), promediada en ~0.8 s | `import_lsp_alphabet.py` → `train_letters.py` | `frontend/public/models/letters/` (**versionado**) |
-| **Senas** | senas con movimiento (HOLA, GRACIAS...) | resumen de ~2.5 s de landmarks | `preprocess.py` → `train.py` → `export_tfjs.py` | `frontend/public/models/sign/` (no versionado) |
+| **Senas** | senas con movimiento (HOLA, GRACIAS...) | resumen de ~2.5 s de landmarks | `preprocess.py` → `train.py` → `export_tfjs.py` | `chaskipe-web/public/models/sign/` |
 
 En "Senas a texto" se elige el modo (Abecedario / Senas). En modo Abecedario
 las letras confirmadas se van sumando a una palabra (deletreo).
@@ -123,13 +123,26 @@ cd frontend && npm run dev
 # 2. revisar el progreso
 py ai/scripts/inspect_dataset.py
 
-# 3. cuando haya ~30 por sena: entrenar
+# 3. entrenar el modelo de frases (las letras tienen su propio modelo)
 cd ai && .venv\Scripts\activate
-py scripts/preprocess.py
-py scripts/train.py
-py scripts/evaluate.py     # revisar accuracy y matriz de confusion
-py scripts/export_tfjs.py  # -> el modelo llega al frontend
+py scripts/preprocess.py --only HOLA,GRACIAS,ADIOS,CUIDATE,REPOSO --augment 8
+py scripts/evaluate.py                         # accuracy con grabaciones no vistas
+py scripts/train.py --val-split 0 --epochs 80  # modelo final con todas las grabaciones
+py scripts/export_tfjs.py                      # -> el modelo llega a la web
 ```
+
+`--augment 8` agrega, por grabacion, la version en espejo (la misma sena con la
+otra mano) y 8 copias con variaciones de giro, ruido y velocidad. La evaluacion
+agrupa cada grabacion con sus copias, asi que mide con grabaciones que el
+modelo no vio.
+
+### Modelo actual (octubre 2026)
+
+Entrenado con 41 grabaciones (HOLA 10, GRACIAS 7, ADIOS 6, CUIDATE 6, REPOSO 12),
+todas de una misma persona y sin validar con LSP. Accuracy con grabaciones no
+vistas: **83 %** (`models/evaluation.json`, `models/confusion_matrix.png`). HOLA
+y ADIOS salen casi siempre bien; REPOSO a veces se confunde con GRACIAS. Para
+mejorar: mas grabaciones (ideal ~30 por sena) y de varias personas.
 
 ## Modelo
 
@@ -138,7 +151,10 @@ py scripts/export_tfjs.py  # -> el modelo llega al frontend
   landmarks, media/desv/rango a lo largo del tiempo; mas la velocidad media de
   la muneca y la presencia media. Los landmarks se normalizan (centrados en la
   muneca, escalados por el tamano de la mano). Para senas con movimiento la
-  desv/rango/velocidad capturan la trayectoria.
+  desv/rango capturan como cambia la forma de la mano. Ojo: como la mano se
+  centra en la muneca antes de medir, la "velocidad de la muneca" siempre vale
+  0 (el movimiento del brazo no entra). Se probo agregar la trayectoria de la
+  muneca y, con las grabaciones actuales, no mejoro el resultado.
 - La MISMA extraccion esta en `frontend/src/services/signFeatures.ts`.
   Verificado: Python y TS coinciden con diferencia < 1e-6. Si cambias una,
   cambia la otra y sube `FEATURE_VERSION` en ambas.

@@ -38,6 +38,10 @@ Nombre de archivo: `<ETIQUETA>__<timestamp ISO con guiones>__<id corto>.json`
 | -------- | ------- | ----- |
 | `HOLA`    | Hola    | sena con **movimiento** (saludo); se graba ~2,5 s |
 | `GRACIAS` | Gracias | sena con **movimiento**; se graba ~2,5 s |
+| `ADIOS`   | Adios   | sena con **movimiento**; se graba ~2,5 s |
+| `CUIDATE` | Cuidate | sena con **movimiento**, con las dos manos; ~2,5 s |
+| `HOLA_COMO_ESTAS` | Hola, como estas | frase con **movimiento** (aun sin grabaciones) |
+| `A`...`Z` | letras  | abecedario; el modelo de letras usa el dataset externo |
 | `REPOSO`  | —       | mano(s) en el encuadre **sin sena**; evita falsos positivos |
 
 - La etiqueta es en MAYUSCULAS, sin tildes ni caracteres especiales.
