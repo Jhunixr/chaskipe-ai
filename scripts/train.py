@@ -14,6 +14,7 @@ entrena una red densa pequena y guarda:
 Uso:
     py ai/scripts/train.py
     py ai/scripts/train.py --epochs 150 --seed 7
+    py ai/scripts/train.py --val-split 0 --epochs 80   # modelo final con TODAS las muestras
 """
 from __future__ import annotations
 
@@ -86,23 +87,41 @@ def main() -> int:
     scaler = StandardScaler().fit(X)
     Xs = scaler.transform(X).astype(np.float32)
 
-    stratify = y if np.bincount(y).min() >= 2 else None
-    X_tr, X_val, y_tr, y_val = train_test_split(
-        Xs, y, test_size=args.val_split, random_state=args.seed, stratify=stratify
-    )
+    if args.val_split <= 0:
+        # Modelo final: todas las muestras, epocas fijas (las de evaluate.py).
+        X_tr, y_tr, X_val, y_val = Xs, y, None, None
+    meta_path = args.processed / "meta.json"
+    meta = json.loads(meta_path.read_text(encoding="utf-8")) if meta_path.exists() else []
+    if args.val_split <= 0:
+        pass
+    elif len(meta) == len(y) and any(m.get("augmented") for m in meta):
+        # Con copias (preprocess --augment): validacion por grabacion completa,
+        # para no validar con una copia de algo visto al entrenar.
+        from sklearn.model_selection import StratifiedGroupKFold
+
+        groups = np.asarray([str(m.get("group") or i) for i, m in enumerate(meta)])
+        splits = max(2, round(1 / args.val_split))
+        sgkf = StratifiedGroupKFold(n_splits=splits, shuffle=True, random_state=args.seed)
+        tr_idx, val_idx = next(sgkf.split(Xs, y, groups))
+        X_tr, X_val, y_tr, y_val = Xs[tr_idx], Xs[val_idx], y[tr_idx], y[val_idx]
+    else:
+        stratify = y if np.bincount(y).min() >= 2 else None
+        X_tr, X_val, y_tr, y_val = train_test_split(
+            Xs, y, test_size=args.val_split, random_state=args.seed, stratify=stratify
+        )
 
     from tensorflow import keras
 
     model = build_model(X.shape[1], num_classes, args.seed)
-    callbacks = [
-        keras.callbacks.EarlyStopping(
-            monitor="val_loss", patience=25, restore_best_weights=True
-        )
-    ]
+    callbacks = (
+        [keras.callbacks.EarlyStopping(monitor="val_loss", patience=25, restore_best_weights=True)]
+        if X_val is not None
+        else []
+    )
     hist = model.fit(
         X_tr,
         y_tr,
-        validation_data=(X_val, y_val),
+        validation_data=(X_val, y_val) if X_val is not None else None,
         epochs=args.epochs,
         batch_size=args.batch_size,
         callbacks=callbacks,
@@ -139,8 +158,10 @@ def main() -> int:
         encoding="utf-8",
     )
 
-    val_acc = float(hist.history["val_accuracy"][-1])
-    print(f"\nval_accuracy final: {val_acc:.3f}")
+    if "val_accuracy" in hist.history:
+        print(f"\nval_accuracy final: {float(hist.history['val_accuracy'][-1]):.3f}")
+    else:
+        print(f"\naccuracy de entrenamiento: {float(hist.history['accuracy'][-1]):.3f} (sin validacion)")
     print(f"Modelo guardado en {args.out}")
     if labels.get("includesSynthetic"):
         print(

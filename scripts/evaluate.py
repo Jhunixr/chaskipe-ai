@@ -76,20 +76,31 @@ def main() -> int:
     classes = labels["classes"]
 
     from sklearn.metrics import classification_report, confusion_matrix
-    from sklearn.model_selection import StratifiedKFold
+    from sklearn.model_selection import StratifiedGroupKFold
     from sklearn.preprocessing import StandardScaler
     from tensorflow import keras
 
-    min_per_class = int(np.bincount(y).min())
+    # Cada grabacion y sus copias (espejo/variaciones, ver preprocess.py) van
+    # siempre al mismo fold, y solo se mide con grabaciones originales.
+    meta_path = args.processed / "meta.json"
+    meta = json.loads(meta_path.read_text(encoding="utf-8")) if meta_path.exists() else []
+    if len(meta) == len(y):
+        groups = np.asarray([str(m.get("group") or m.get("file") or i) for i, m in enumerate(meta)])
+        original = np.asarray([not m.get("augmented", False) for m in meta])
+    else:
+        groups = np.arange(len(y)).astype(str)
+        original = np.ones(len(y), dtype=bool)
+    min_per_class = int(np.bincount(y[original]).min())
     folds = max(2, min(args.folds, min_per_class))
     if folds < args.folds:
         print(f"Reduciendo a {folds} folds (clase mas pequena: {min_per_class}).")
 
-    skf = StratifiedKFold(n_splits=folds, shuffle=True, random_state=args.seed)
+    skf = StratifiedGroupKFold(n_splits=folds, shuffle=True, random_state=args.seed)
     y_true_all: list[int] = []
     y_pred_all: list[int] = []
 
-    for fold, (tr, te) in enumerate(skf.split(X, y), start=1):
+    for fold, (tr, te) in enumerate(skf.split(X, y, groups), start=1):
+        te = te[original[te]]
         scaler = StandardScaler().fit(X[tr])
         X_tr = scaler.transform(X[tr]).astype(np.float32)
         X_te = scaler.transform(X[te]).astype(np.float32)

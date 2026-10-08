@@ -29,11 +29,21 @@ WRIST, MIDDLE_MCP = 0, 9
 
 
 def hand_frames(sample: dict) -> list[tuple[float, dict]]:
-    """(t, mano) por cuadro, usando siempre la misma mano (la mas frecuente)."""
+    """(t, mano) por cuadro, usando siempre la misma mano.
+
+    Si la sena usa las dos manos, se toma la que mas se mueve (la dominante):
+    el avatar tiene una sola mano articulada.
+    """
     counts = Counter(h["handedness"] for f in sample["frames"] for h in f["hands"])
     if not counts:
         return []
-    main = counts.most_common(1)[0][0]
+
+    def motion(label: str) -> float:
+        w = [h["landmarks"][WRIST][:2] for f in sample["frames"] for h in f["hands"] if h["handedness"] == label]
+        return float(np.std(np.asarray(w), axis=0).sum()) if len(w) >= 5 else -1.0
+
+    frequent = [label for label, n in counts.items() if n >= 0.5 * max(counts.values())]
+    main = max(frequent, key=motion)
     out = []
     for f in sample["frames"]:
         hands = [h for h in f["hands"] if h["handedness"] == main]
@@ -73,13 +83,22 @@ def convert(sample: dict) -> dict:
         sizes.append(size)
         times.append(t)
 
+    # Mismo convenio que el abecedario (`lspAlphabet.json`), cuyas fotos estan
+    # en espejo: una mano derecha (etiqueta "Right" de la herramienta de
+    # captura, vista tal cual por la camara) se refleja; una izquierda ya
+    # queda como en el abecedario. Asi la web trata igual letras y senas, y la
+    # mano realista vuelve a reflejar todo para hacerlo con la derecha.
+    mirror = frames[0][1]["handedness"] == "Right"
+    flip = np.array([-1.0, 1.0, 1.0]) if mirror else np.ones(3)
+    poses = [p * flip for p in poses]
+
     t0 = times[0]
     size = float(np.median(sizes))
     w0 = wrists[0]
     out_frames = []
     for t, pose, w in zip(times, poses, wrists):
         # desplazamiento de la muneca respecto al primer cuadro, en "manos"
-        off = to_three((w - w0) / size)
+        off = to_three((w - w0) / size) * flip
         out_frames.append(
             {
                 "t": round(t - t0),

@@ -1,1 +1,10 @@
 .venv/
+
+# Generados al entrenar (se rehacen con preprocess.py / train.py)
+data/processed/*
+!data/processed/.gitkeep
+models/*
+!models/.gitkeep
+!models/evaluation.json
+!models/confusion_matrix.png
+__pycache__/
