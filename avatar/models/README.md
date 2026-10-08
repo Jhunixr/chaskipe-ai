@@ -35,6 +35,25 @@ python build_avatar.py ../models/chaski_trellis_ojos.glb mano_esculpida_vertices
 El puno de la manga queda en (-0.479, -0.338, 0.41): la mano articulada se
 coloca justo encima, en (-0.479, -0.30, 0.41).
 
+## `../exports/mano.glb` (va a `chaskipe-web/public/models/avatar/mano.glb`)
+
+La mano con la que Chaski deletrea: la mano derecha del cuerpo base de
+**MakeHuman** (malla, esqueleto y pesos, todo **CC0**; repositorio
+`makehumancommunity/makehuman`, carpeta `makehuman/data`). Se genera con:
+
+```bash
+git clone --depth 1 --filter=blob:none --sparse https://github.com/makehumancommunity/makehuman mh
+(cd mh && git sparse-checkout set makehuman/data/rigs makehuman/data/3dobjs)
+cd avatar/scripts
+python build_real_hand.py ../../mh/makehuman/data ../exports/mano.glb
+```
+
+El script recorta la mano (y un trozo de antebrazo que queda dentro de la
+manga), la pasa al marco de la palma (muneca -> nudillo del medio = 1), la
+suaviza con una subdivision y deja 16 huesos (palma + 15 falanges) con los
+pesos de MakeHuman. Tambien pinta la palma un poco mas clara y las unas.
+En la web, `realHand.ts` mueve esos huesos con cada letra.
+
 ## `chaski_hunyuan3d_preview.glb` (modelo anterior, ya no se usa)
 
 El nino Chaski del logo convertido a 3D con **Hunyuan3D-2** (Tencent, Space

@@ -30,8 +30,9 @@ el texto: sube el brazo derecho y su mano forma cada letra.
 La app (`chaskipe-web`) carga `public/models/avatar/chaski.glb`, que es
 `avatar/exports/chaski_web.glb`: el nino del logo en 3D generado con
 **TRELLIS** (ver `avatar/models/README.md`). A ese modelo se le quito la mano
-esculpida del brazo levantado y en el puno de la manga se coloca la mano
-articulada, que forma las letras. En reposo muestra la B (mano abierta). Si el
+esculpida del brazo levantado y en el puno de la manga se coloca una mano
+humana realista con huesos (`avatar/exports/mano.glb`, de MakeHuman, CC0),
+que forma las letras. En reposo muestra la B (mano abierta). Si el
 GLB no carga, se usa el avatar geometrico, que tambien deletrea.
 
 `avatar/exports/chaski_web.json` guarda donde quedo el puno (centro, normal,
