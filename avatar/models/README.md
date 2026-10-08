@@ -1,6 +1,41 @@
 # Modelos 3D del avatar
 
-## `chaski_hunyuan3d_preview.glb` (vista previa, sin esqueleto)
+## `chaski_trellis.glb` (original de TRELLIS)
+
+El Chaski del logo convertido a 3D con **TRELLIS** (Microsoft, Space
+`trellis-community/TRELLIS` de Hugging Face, *image to 3D* con textura
+completa). Licencia de TRELLIS: **MIT**. 21 mil vertices, textura 2048 x 2048.
+
+## `chaski_trellis_ojos.glb`
+
+El mismo modelo con el ojo que guinaba **abierto**: los texeles del ojo
+abierto se proyectaron de frente y se copiaron en espejo sobre el ojo cerrado
+(tambien la ceja). Ademas se le quito el acabado metalico (`metallicFactor` 1
+lo oscurecia) y la textura pasa a JPEG.
+
+## `../exports/chaski_web.glb` (va a `chaskipe-web/public/models/avatar/chaski.glb`)
+
+Se genera desde `chaski_trellis_ojos.glb` con los scripts de `avatar/scripts/`
+(necesitan `trimesh`, `scipy`, `pygltflib`, `pillow`):
+
+```bash
+cd avatar/scripts
+python seleccionar_mano.py ../models/chaski_trellis_ojos.glb mano_esculpida_vertices.npy
+python build_avatar.py ../models/chaski_trellis_ojos.glb mano_esculpida_vertices.npy \
+  ../exports/chaski_web.glb ../exports/chaski_web.json
+```
+
+1. `seleccionar_mano.py` marca la mano esculpida (piel conectada delante del
+   brazo derecho, sin tocar el chullo ni la manga).
+2. `build_avatar.py` la quita, limpia el borde del corte, tapa los huecos con
+   una membrana suave del color de alrededor, calcula normales suaves (el GLB
+   de TRELLIS no trae normales y se veia facetado), escala al tamano del
+   modelo anterior (x2, y -0,06) y escribe el GLB.
+
+El puno de la manga queda en (-0.479, -0.338, 0.41): la mano articulada se
+coloca justo encima, en (-0.479, -0.30, 0.41).
+
+## `chaski_hunyuan3d_preview.glb` (modelo anterior, ya no se usa)
 
 El nino Chaski del logo convertido a 3D con **Hunyuan3D-2** (Tencent, Space
 `tencent/Hunyuan3D-2` de Hugging Face) a partir de `chaski_hunyuan3d_input.png`
@@ -18,9 +53,3 @@ El nino Chaski del logo convertido a 3D con **Hunyuan3D-2** (Tencent, Space
 - Licencia de Hunyuan3D-2: *Tencent Hunyuan 3D 2.0 Community License*
   (no aplica en la UE, Reino Unido ni Corea del Sur; revisar antes de un uso
   comercial grande).
-
-## `frontend/public/models/avatar/chaski.glb` (el que usa la app)
-
-El mismo modelo sin la mano esculpida del brazo levantado (componente conexa
-de la malla delante de la orejera). Su muneca queda en (-0.589, -0.30, 0.395)
-en coordenadas del modelo: ahi `scene.ts` coloca la mano articulada.
